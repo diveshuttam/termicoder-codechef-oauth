@@ -1,23 +1,19 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import os
 import requests
 import json
 from requests_oauthlib import OAuth2
-
-
-# TODO get token_callback_uri from the request
-token_callback_uri = "http://127.0.0.1:8000/"
-headers = {
-    'content-Type': 'application/json',
-}
+from dotenv import load_dotenv
+load_dotenv()
 
 try:
     client_id = os.environ['client_id']
     client_secret = os.environ['client_secret']
 except KeyError:
-    print("client id not defined")
+    print("client id or secret not defined")
     raise
 
+callback_uri = "http://localhost:5000/authorize"
 
 # TODO do everything with oauth2
 OAuth2()
@@ -29,20 +25,40 @@ app.config.from_mapping(
 )
 
 
-@app.route("/<string:authorization_code>")
-def index(authorization_code):
+@app.route("/")
+def index():
+    authorize_url = "https://api.codechef.com/oauth/authorize"
+    data = {
+        "response_type": "code",
+        "client_id": client_id,
+        "state": "xyz",
+        "redirect_uri": callback_uri
+    }
+    authorization_redirect_url = requests.get(authorize_url, params=data).url
+    print(authorization_redirect_url)
+    return render_template("index.html", url=authorization_redirect_url)
+
+
+@app.route("/authorize")
+def authorize():
+    headers = {
+        'content-Type': 'application/json',
+    }
+    token_url = "https://api.codechef.com/oauth/token"
+    code = request.args.get('code')
+    state = request.args.get('state')
     data = {
         'grant_type': 'authorization_code',
-        'code': authorization_code,
+        'code': code,
         'client_id': client_id,
         'client_secret': client_secret,
-        'redirect_uri': token_callback_uri
+        'redirect_uri': callback_uri
     }
 
     print("requesting access token")
     try:
         access_token_response = requests.post(
-            'https://api.codechef.com/oauth/token', data=json.dumps(data),
+            token_url, data=json.dumps(data),
             headers=headers)
         response = access_token_response.text
         print(response)
@@ -55,9 +71,9 @@ def index(authorization_code):
         print(access_token)
     except BaseException as e:
         print(e)
-        return render_template('error.html', error=pretty_result)
+        return render_template('error.html', response=pretty_result)
     else:
-        return render_template('index.html', response=pretty_result)
+        return render_template('authorize.html', response=pretty_result)
 
 
 if __name__ == "__main__":
