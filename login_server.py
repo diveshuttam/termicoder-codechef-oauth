@@ -13,7 +13,7 @@ except KeyError:
     print("client id or secret not defined")
     raise
 
-callback_uri = "http://localhost:5000/authorize"
+callback_uri = "http://termicoder.diveshuttam.me/authorize"
 
 # TODO do everything with oauth2
 OAuth2()
