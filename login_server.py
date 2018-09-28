@@ -34,7 +34,7 @@ def index():
         "state": "xyz",
         "redirect_uri": callback_uri
     }
-    authorization_redirect_url = requests.get(authorize_url, params=data).url
+    authorization_redirect_url = requests.request('get', authorize_url, params=data).url
     print(authorization_redirect_url)
     return render_template("index.html", url=authorization_redirect_url)
 
