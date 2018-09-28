@@ -6,6 +6,7 @@ from requests_oauthlib import OAuth2
 from dotenv import load_dotenv
 load_dotenv()
 
+# TODO check security and fail scenario, esp. for the authorize endpoint
 try:
     client_id = os.environ['client_id']
     client_secret = os.environ['client_secret']
