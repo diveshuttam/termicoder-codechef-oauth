@@ -5,6 +5,8 @@ import json
 from requests_oauthlib import OAuth2
 from dotenv import load_dotenv
 load_dotenv()
+import sys
+
 
 # TODO check security and fail scenario, esp. for the authorize endpoint
 try:
@@ -35,8 +37,9 @@ def index():
         "state": "xyz",
         "redirect_uri": callback_uri
     }
-    authorization_redirect_url = requests.request('get', authorize_url, params=data).url
+    authorization_redirect_url = requests.Request('get', authorize_url, params=data).prepare().url
     print(authorization_redirect_url)
+    sys.stdout.flush()
     return render_template("index.html", url=authorization_redirect_url)
 
 
@@ -61,13 +64,11 @@ def authorize():
         access_token_response = requests.post(
             token_url, data=json.dumps(data),
             headers=headers)
-        response = access_token_response.text
+        response = json.loads(access_token_response.text.strip())
         print(response)
-        tokens = json.loads(response.strip())
-        result = tokens["result"]
-        pretty_result = json.dumps(result, indent=4)
+        pretty_result = json.dumps(response, indent=4)
         access_token_response.raise_for_status()
-        data = result["data"]
+        data = response["result"]["data"]
         access_token = data["access_token"]
         print(access_token)
     except BaseException as e:
@@ -78,4 +79,4 @@ def authorize():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run('0.0.0.0', port=int(80), debug=False)
