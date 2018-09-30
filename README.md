@@ -10,3 +10,6 @@ This also servers the offline archive with extracted testcases for termicoder.
 The near future plan is to use this for:
   - termicoder-random (generating random practice contests using termicoder)
   - termicoder-predict (predicting possible tags of a unknown problem using NLP and input constraints)
+
+## NOTE
+codechef oauth does not support oauth for teams yet
