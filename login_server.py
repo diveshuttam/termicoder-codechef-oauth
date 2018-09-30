@@ -1,11 +1,11 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import os
 import requests
 import json
 from requests_oauthlib import OAuth2
 from dotenv import load_dotenv
-load_dotenv()
 import sys
+load_dotenv()
 
 
 # TODO check security and fail scenario, esp. for the authorize endpoint
@@ -18,7 +18,7 @@ except KeyError:
 
 callback_uri = "http://termicoder.diveshuttam.me/authorize"
 
-# TODO do everything with oauth2
+# TODO do everything with request-oauthlib
 OAuth2()
 
 
@@ -28,6 +28,7 @@ app.config.from_mapping(
 )
 
 
+# TODO implemnet give and check of state to make prevent cross site forgry
 @app.route("/")
 def index():
     authorize_url = "https://api.codechef.com/oauth/authorize"
@@ -37,7 +38,8 @@ def index():
         "state": "xyz",
         "redirect_uri": callback_uri
     }
-    authorization_redirect_url = requests.Request('get', authorize_url, params=data).prepare().url
+    authorization_redirect_url = requests.Request(
+        'get', authorize_url, params=data).prepare().url
     print(authorization_redirect_url)
     sys.stdout.flush()
     return render_template("index.html", url=authorization_redirect_url)
@@ -51,6 +53,7 @@ def authorize():
     token_url = "https://api.codechef.com/oauth/token"
     code = request.args.get('code')
     state = request.args.get('state')
+    print(state)
     data = {
         'grant_type': 'authorization_code',
         'code': code,
@@ -76,6 +79,32 @@ def authorize():
         return render_template('error.html', response=pretty_result)
     else:
         return render_template('authorize.html', response=pretty_result)
+
+
+@app.route("/ppt")
+def ppt():
+    google_slide_link = 'https://docs.google.com/presentation/d/' + \
+                        '1KRNxb7YnfM4xiUJN8dNx1JnbeW0z4j8j8LeXmaCmdq8/'
+    return redirect(google_slide_link)
+
+
+@app.route("/repository")
+def repository():
+    repository_link = 'https://github.com/termicoder/termicoder-beta'
+    return redirect(repository_link)
+
+
+@app.route("/videos")
+def vedios():
+    youtube_playlist_link = 'https://www.youtube.com/playlist?' + \
+                            'list=PLFkjosN0kO0Hn8umdK-XUIz5IlvUqB6VK'
+    return redirect(youtube_playlist_link)
+
+
+@app.route('/asciinema')
+def asciinema():
+    asciinema_link = 'https://asciinema.org/~diveshuttam'
+    return redirect(asciinema_link)
 
 
 if __name__ == "__main__":

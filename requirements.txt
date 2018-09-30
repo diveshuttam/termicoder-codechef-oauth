@@ -2,4 +2,3 @@ requests
 requests_oauthlib
 flask
 python-dotenv
-dotenv
