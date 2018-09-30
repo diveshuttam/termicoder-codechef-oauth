@@ -12,4 +12,4 @@ The near future plan is to use this for:
   - termicoder-predict (predicting possible tags of a unknown problem using NLP and input constraints)
 
 ## NOTE
-codechef oauth does not support oauth for teams yet
+codechef does not support oauth for teams yet so termicoder doesn't work for teams
