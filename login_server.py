@@ -27,8 +27,33 @@ app.config.from_mapping(
         SECRET_KEY='dev',
 )
 
+def log_user(access_token):
+    users = []
+    try:
+        with open('users.json', 'r') as user_file:
+            users = json.load(user_file)
+    except:
+            pass
+    if(users is None or not isinstance(users,list)):
+        users = []
 
-# TODO implemnet give and check of state to make prevent cross site forgry
+    try:
+        s = requests.session()
+        OAuth2_Header = {
+                'Authorization': 'Bearer %s' % access_token
+        }
+        s.headers.update(OAuth2_Header)
+        username = s.get('https://api.codechef.com/users/me').json()['result']['data']['content']['username']
+        print(username)
+        uset = set(users)
+        uset.add(username)
+        users = list(uset)
+        with open('users.json', 'w') as user_file:
+            json.dump(users, user_file)
+    except:
+        raise
+
+# TODO implement give and check of state to make prevent cross site forgry
 @app.route("/")
 def index():
     authorize_url = "https://api.codechef.com/oauth/authorize"
@@ -40,7 +65,6 @@ def index():
     }
     authorization_redirect_url = requests.Request(
         'get', authorize_url, params=data).prepare().url
-    print(authorization_redirect_url)
     sys.stdout.flush()
     return render_template("index.html", url=authorization_redirect_url)
 
@@ -74,6 +98,10 @@ def authorize():
         data = response["result"]["data"]
         access_token = data["access_token"]
         print(access_token)
+        try:
+            log_user(access_token)
+        except:
+            pass
     except BaseException as e:
         print(e)
         return render_template('error.html', response=pretty_result)
@@ -106,6 +134,15 @@ def asciinema():
     asciinema_link = 'https://asciinema.org/~diveshuttam'
     return redirect(asciinema_link)
 
+@app.route('/users')
+def users():
+    try:
+        users=json.load(open('users.json'))
+        assert(isinstance(users, list))
+    except:
+        return render_template('no_users.html')
+    else:
+        return render_template('users.html', users=users)
 
 if __name__ == "__main__":
     app.run('0.0.0.0', port=int(80), debug=False)
