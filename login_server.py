@@ -45,13 +45,13 @@ def log_user(access_token):
         s.headers.update(OAuth2_Header)
         username = s.get('https://api.codechef.com/users/me').json()['result']['data']['content']['username']
         print(username)
-        uset = set(users)
-        uset.add(username)
-        users = list(uset)
+        if username not in users:
+            users.append(username)
         with open('users.json', 'w') as user_file:
             json.dump(users, user_file)
-    except:
-        raise
+    except BaseException:
+        pass
+
 
 # TODO implement give and check of state to make prevent cross site forgry
 @app.route("/")
