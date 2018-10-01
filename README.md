@@ -15,4 +15,4 @@ The near future plan is to use this for:
 
 ## NOTE
 
-codechef does not support oauth for teams yet
+CodeChef does not support oauth for teams yet so termicoder doesn't work for teams
