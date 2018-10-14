@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, make_response
 import os
 import requests
 import json
@@ -104,7 +104,7 @@ def authorize():
             pass
     except BaseException as e:
         print(e)
-        return render_template('error.html', response=pretty_result)
+        return make_response(render_template('error.html', response=pretty_result), 401)
     else:
         return render_template('authorize.html', response=pretty_result)
 
@@ -144,5 +144,46 @@ def users():
     else:
         return render_template('users.html', users=users)
 
+@app.route('/refresh_token')
+def refresh_token():
+    result = request.args.get('result')
+    refresh_token = result['data']['refresh_token']
+    headers = {
+        'content-Type': 'application/json',
+    }
+    refresh_url = "https://api.codechef.com/oauth/token"
+    data = {
+        'grant_type': 'refresh_token',
+        'refresh_token': refresh_token,
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'redirect_uri': callback_uri
+    }
+    try:
+        access_token_response = requests.post(
+            token_url, data=json.dumps(data),
+            headers=headers)
+        response = json.loads(access_token_response.text.strip())
+        print(response)
+        pretty_result = json.dumps(response, indent=4)
+        access_token_response.raise_for_status()
+        data = response["result"]["data"]
+        access_token = data["access_token"]
+        print(access_token)
+    except BaseException as e:
+        print(e)
+        return make_response(render_template('error.html', response=pretty_result), 401)
+    else:
+        return pretty_result
+
 if __name__ == "__main__":
-    app.run('0.0.0.0', port=int(80), debug=False)
+    try:
+        debug = (os.environ['DEBUG'].lower() == "true")
+        callback_uri = "http://localhost:8080/authorize"
+    except:
+        debug = False
+    
+    if debug:
+        app.run('0.0.0.0', port=int(8080), debug=True)
+    else:
+        app.run('0.0.0.0', port=int(80), debug=False)
