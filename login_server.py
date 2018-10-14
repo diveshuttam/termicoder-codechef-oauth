@@ -175,7 +175,7 @@ def refresh_token():
         print(access_token)
     except BaseException as e:
         print(e)
-        return make_response(render_template('error.html', response=pretty_result), 401)
+        return pretty_result, 401
     else:
         return pretty_result
 
