@@ -123,7 +123,7 @@ def repository():
 
 
 @app.route("/videos")
-def vedios():
+def videos():
     youtube_playlist_link = 'https://www.youtube.com/playlist?' + \
                             'list=PLFkjosN0kO0Hn8umdK-XUIz5IlvUqB6VK'
     return redirect(youtube_playlist_link)
@@ -139,6 +139,7 @@ def users():
     try:
         users=json.load(open('users.json'))
         assert(isinstance(users, list))
+        assert(users != [])
     except:
         return render_template('no_users.html')
     else:
@@ -146,7 +147,9 @@ def users():
 
 @app.route('/refresh_token')
 def refresh_token():
-    result = request.args.get('result')
+    print(request.args)
+    data = json.loads(request.args.get('data'))
+    result = data['result']
     refresh_token = result['data']['refresh_token']
     headers = {
         'content-Type': 'application/json',
@@ -161,7 +164,7 @@ def refresh_token():
     }
     try:
         access_token_response = requests.post(
-            token_url, data=json.dumps(data),
+            refresh_url, data=json.dumps(data),
             headers=headers)
         response = json.loads(access_token_response.text.strip())
         print(response)
